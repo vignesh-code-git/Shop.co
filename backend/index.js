@@ -54,6 +54,41 @@ sessionStore.sync();
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Dynamic upload serving and cache warming from PostgreSQL database
+app.get('/uploads/:filename', async (req, res, next) => {
+  try {
+    const { filename } = req.params;
+    const fs = require('fs');
+    const localPath = path.join(process.cwd(), 'uploads', filename);
+
+    // If file exists on local filesystem, pass to express.static (fast static serving)
+    if (fs.existsSync(localPath)) {
+      return next();
+    }
+
+    // If missing from local filesystem (e.g. after Render restart), fetch from Database
+    const { UploadedFile } = require('./models/associations');
+    const file = await UploadedFile.findOne({ where: { filename } });
+
+    if (file) {
+      // Warm local disk cache so subsequent requests bypass the database
+      try {
+        fs.writeFileSync(localPath, file.data);
+        console.log(`Restored and cached missing upload to local disk: ${filename}`);
+      } catch (writeErr) {
+        console.error('Failed to write cached upload to disk:', writeErr);
+      }
+
+      res.setHeader('Content-Type', file.mimeType);
+      return res.send(file.data);
+    }
+  } catch (err) {
+    console.error('Error fetching file from DB:', err);
+  }
+  next();
+});
+
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes

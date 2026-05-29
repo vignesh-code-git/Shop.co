@@ -6,11 +6,12 @@ const { protect } = require('../middleware/authMiddleware');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const upload = require('../config/multer');
+const dbPersistUploads = require('../middleware/uploadDbPersist');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.put('/profile', protect, updateProfile);
-router.post('/avatar', protect, upload.any(), updateAvatar);
+router.post('/avatar', protect, upload.any(), dbPersistUploads, updateAvatar);
 router.get('/me', protect, getMe);
 router.post('/logout', logoutUser);
 router.delete('/account', protect, deleteAccount);

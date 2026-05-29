@@ -16,6 +16,7 @@ const Brand = require('./Brand');
 const Style = require('./Style');
 const Size = require('./Size');
 const Color = require('./Color');
+const UploadedFile = require('./UploadedFile');
 
 // Define associations
 User.hasMany(Product, { foreignKey: 'sellerId', onDelete: 'CASCADE' });
@@ -95,5 +96,6 @@ module.exports = {
   Brand,
   Style,
   Size,
-  Color
+  Color,
+  UploadedFile
 };

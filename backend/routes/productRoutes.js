@@ -3,6 +3,7 @@ const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require('../config/multer');
 const { protect, isSeller } = require('../middleware/authMiddleware');
+const dbPersistUploads = require('../middleware/uploadDbPersist');
 const { validateProduct } = require('../validations/productValidation');
 
 // Public routes
@@ -20,10 +21,10 @@ router.get('/:id', productController.getProductById);
 // Protected routes
 router.get('/seller/my-products', protect, isSeller, productController.getSellerProducts);
 router.get('/seller/export', protect, isSeller, productController.exportProductsToCSV);
-router.post('/', protect, isSeller, upload.any(), productController.createProduct);
+router.post('/', protect, isSeller, upload.any(), dbPersistUploads, productController.createProduct);
 router.post('/bulk', protect, isSeller, upload.single('file'), productController.bulkUploadProducts);
 
-router.put('/:id', protect, isSeller, upload.any(), productController.updateProduct);
+router.put('/:id', protect, isSeller, upload.any(), dbPersistUploads, productController.updateProduct);
 router.delete('/:id', protect, isSeller, productController.deleteProduct);
 
 module.exports = router;

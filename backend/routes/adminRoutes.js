@@ -10,6 +10,7 @@ const {
 } = require('../controllers/adminController');
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 const upload = require('../config/multer');
+const dbPersistUploads = require('../middleware/uploadDbPersist');
 
 router.get('/settings', getSettings);
 
@@ -19,7 +20,7 @@ router.use(isAdmin);
 
 router.get('/users', getAllUsers);
 router.get('/sellers', getAllSellers);
-router.post('/settings/upload', upload.single('image'), updateSettings);
+router.post('/settings/upload', upload.single('image'), dbPersistUploads, updateSettings);
 
 // Attribute Management
 router.post('/categories', addCategory);
