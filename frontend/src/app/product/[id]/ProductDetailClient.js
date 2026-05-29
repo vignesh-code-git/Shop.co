@@ -11,6 +11,11 @@ import './product-detail.css';
 export default function ProductDetailClient({ product, relatedProducts, id }) {
   const [selectedColor, setSelectedColor] = useState('');
 
+  // Scroll to the absolute top of the page on product change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [product.id]);
+
   useEffect(() => {
     if (product.color) {
       const colors = product.color.split(',').map(c => c.trim());
