@@ -13,6 +13,8 @@ async function getShopData(searchParams) {
     if (searchParams.size) params.append('size', searchParams.size);
     if (searchParams.search) params.append('search', searchParams.search);
     if (searchParams.brand) params.append('brand', searchParams.brand);
+    if (searchParams.page) params.append('page', searchParams.page);
+    params.append('limit', '9');
     
     const sortMap = {
       'Most Popular': 'popular',
@@ -30,23 +32,27 @@ async function getShopData(searchParams) {
     
     return {
       products: prodData.products || [],
-      total: prodData.total || 0
+      total: prodData.total || 0,
+      totalPages: prodData.totalPages || 1,
+      currentPage: prodData.currentPage || 1
     };
   } catch (err) {
     console.error("Failed to fetch shop data:", err);
-    return { products: [], total: 0 };
+    return { products: [], total: 0, totalPages: 1, currentPage: 1 };
   }
 }
 
 export default async function ShopPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  const { products, total } = await getShopData(resolvedSearchParams);
+  const { products, total, totalPages, currentPage } = await getShopData(resolvedSearchParams);
 
   return (
     <Suspense fallback={<div className="container" style={{padding: '100px 0', textAlign: 'center'}}>Loading products...</div>}>
       <ShopPageContent 
         initialProducts={products} 
         initialTotal={total} 
+        totalPages={totalPages}
+        currentPage={currentPage}
         searchParams={resolvedSearchParams} 
       />
     </Suspense>

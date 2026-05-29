@@ -10,7 +10,7 @@ import CustomSelect from '@/components/CustomSelect/CustomSelect';
 import ProductCardSkeleton from '@/components/Skeleton/ProductCardSkeleton';
 import './shop-page.css';
 
-export default function ShopPageContent({ initialProducts, initialTotal, searchParams }) {
+export default function ShopPageContent({ initialProducts, initialTotal, totalPages, currentPage, searchParams }) {
   const router = useRouter();
   const [products, setProducts] = useState(initialProducts || []);
   const [loading, setLoading] = useState(false);
@@ -48,6 +48,9 @@ export default function ShopPageContent({ initialProducts, initialTotal, searchP
       hasFilters = true;
     }
 
+    // Reset to page 1 on filter apply
+    params.delete('page');
+
     // Only navigate if we actually have filters OR if the current URL has filters we need to clear
     const currentQuery = window.location.search;
     if (hasFilters || currentQuery) {
@@ -61,7 +64,16 @@ export default function ShopPageContent({ initialProducts, initialTotal, searchP
     setLoading(true);
     const params = new URLSearchParams(window.location.search);
     params.set('sortBy', newSort);
+    params.delete('page'); // Reset to page 1 on sort change
     router.push(`/shop?${params.toString()}`);
+  };
+
+  const handlePageChange = (page) => {
+    setLoading(true);
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', page);
+    router.push(`/shop?${params.toString()}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetFilters = () => {
@@ -96,7 +108,7 @@ export default function ShopPageContent({ initialProducts, initialTotal, searchP
               <div className="header-left">
                 <h1>ALL PRODUCTS</h1>
                 <p className="product-count">
-                  {products.length > 0 ? `Showing 1-${products.length} of ${initialTotal} Products` : 'No Products Available'}
+                  {initialTotal > 0 ? `Showing ${(currentPage - 1) * 9 + 1}-${Math.min(currentPage * 9, initialTotal)} of ${initialTotal} Products` : 'No Products Available'}
                 </p>
               </div>
               <div className="header-right">
@@ -135,9 +147,15 @@ export default function ShopPageContent({ initialProducts, initialTotal, searchP
                     />
                   ))}
                 </div>
-                <div className="pagination-wrapper">
-                  <Pagination />
-                </div>
+                {totalPages > 1 && (
+                  <div className="pagination-wrapper">
+                    <Pagination 
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
               </>
             ) : (
               <div className="no-results">
